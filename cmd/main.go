@@ -18,7 +18,7 @@ type myJob struct {
 	str string
 }
 
-const path = "./v1/config/config.yml"
+const path = "config.yml"
 
 func (m myJob) Execute(ctx context.Context) (any, error) {
 	fmt.Println(m.id, m.str)

@@ -1,0 +1,10 @@
+services:
+  worker_pool_go:
+    build:
+      context: .
+      dockerfile: ./cmd/Dockerfile
+    container_name: worker_pool_go
+    restart: unless-stopped
+    volumes:
+      - ./v1/config/config.yml:/app/config.yml
+
