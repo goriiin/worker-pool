@@ -1,0 +1,4 @@
+
+worker_pool:
+  size: 1931
+  buffer: 1342
