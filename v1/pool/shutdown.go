@@ -1,22 +1,31 @@
 package pool
 
+import "log"
+
 func (wp *WorkerPool) Shutdown() {
-	wp.mu.Lock()
+	log.Println("Shutting down workers...")
 
-	if wp.state == ShuttingDown ||
-		wp.state == Stopped ||
-		wp.state == Stopping {
-		wp.mu.Unlock()
-
+	if st := wp.atomicLoadState(); st == ShuttingDown ||
+		st == Stopped ||
+		st == Stopping {
 		return
 	}
 
 	wp.atomicStoreState(ShuttingDown)
 
-	close(wp.tasks)
+	wp.mu.Lock()
+
+	for _, w := range wp.workers {
+		w.Cancel()
+	}
+
 	wp.mu.Unlock()
 
 	wp.wg.Wait()
 
+	close(wp.tasks)
+
 	wp.atomicStoreState(Stopped)
+
+	log.Println("Shutting down success")
 }

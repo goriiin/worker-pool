@@ -1,4 +1,4 @@
 
 worker_pool:
-  size: 1931
-  buffer: 1342
+  size: 2143
+  buffer: 153

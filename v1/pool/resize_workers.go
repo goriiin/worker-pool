@@ -8,7 +8,7 @@ func (wp *WorkerPool) Resize(size int) error {
 	if wp.state != Running {
 		wp.mu.Unlock()
 
-		return ErrPoolStopped
+		return ErrNotRunning
 	}
 
 	if size < 0 {
@@ -22,11 +22,11 @@ func (wp *WorkerPool) Resize(size int) error {
 
 	switch {
 	case diff > 0:
+		wp.mu.Unlock()
+
 		for i := 0; i < diff; i++ {
 			go wp.addWorker()
 		}
-
-		wp.mu.Unlock()
 
 		return nil
 	case diff < 0:

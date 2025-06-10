@@ -8,6 +8,7 @@ help:
 
 
 cover:
+	go test -v -race ./...
 	go test -cover ./v1/pool/...
 
 cover_html:

@@ -2,32 +2,45 @@ package pool
 
 import (
 	"github.com/goriiin/worker-pool/v1/domain"
-	"sync/atomic"
 )
 
 func (wp *WorkerPool) Stop() {
+	if st := wp.atomicLoadState(); st == Stopped ||
+		st == Stopping {
+		return
+	}
+
 	wp.mu.Lock()
 
-	if wp.state == Stopped || wp.state == Stopping {
+	if wp.state == Stopped ||
+		wp.state == Stopping {
 		wp.mu.Unlock()
 
 		return
 	}
 
-	atomic.StoreInt32((*int32)(&wp.state), int32(Stopping))
+	wp.atomicStoreState(Stopping)
 
-	wp.cancel()
+	for _, w := range wp.workers {
+		w.Cancel()
+	}
+
 	close(wp.tasks)
 
-	wp.mu.Unlock()
-	wp.wg.Wait()
+	remainingTasks := make([]*domain.Task, 0, len(wp.tasks))
+	for task := range wp.tasks {
+		remainingTasks = append(remainingTasks, task)
+	}
 
-	wp.mu.Lock()
 	for t := range wp.tasks {
 		t.Future.Result <- domain.FutureResult{Err: ErrPoolStopped}
 		close(t.Future.Result)
 	}
+
 	wp.mu.Unlock()
+
+	wp.cancel()
+	wp.wg.Wait()
 
 	wp.atomicStoreState(Stopped)
 }

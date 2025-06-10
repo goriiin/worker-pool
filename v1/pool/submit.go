@@ -6,12 +6,9 @@ import (
 )
 
 func (wp *WorkerPool) Submit(ctx context.Context, j domain.Job) (*domain.Future, error) {
-	wp.mu.Lock()
-	defer wp.mu.Unlock()
-
-	if wp.state == ShuttingDown ||
-		wp.state == Stopping ||
-		wp.state == Stopped {
+	if st := wp.atomicLoadState(); st == ShuttingDown ||
+		st == Stopping ||
+		st == Stopped {
 
 		return nil, ErrPoolStopped
 	}

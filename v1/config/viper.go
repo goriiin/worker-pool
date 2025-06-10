@@ -12,6 +12,10 @@ type PoolConfig struct {
 	Buffer int `mapstructure:"buffer"`
 }
 
+type Logger struct {
+	Level string `mapstructure:"level"`
+}
+
 type Config struct {
 	Pool PoolConfig `mapstructure:"worker_pool"`
 }
